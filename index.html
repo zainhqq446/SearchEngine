@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Pengaturan karakter dan tampilan halaman -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Engine</title>
+
+    <!-- Menambahkan stylesheet eksternal -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Header dengan judul Search Engine Automata -->
+    <h1>Search Engine Automata</h1>
+
+    <!-- Form pencarian -->
+    <form id="searchContainer">
+        <!-- Input untuk memasukkan huruf -->
+        <input type="text" id="inputChar" placeholder="Masukkan huruf..." maxlength="1">
+
+        <!-- Datalist untuk menampilkan daftar huruf -->
+        <datalist id="charList"></datalist>
+
+        <!-- Tombol untuk memulai pencarian -->
+        <button type="button" onclick="search()">Search</button>
+
+        <!-- Kotak hasil pencarian -->
+        <div id="resultBox"></div>
+    </form>
+
+    <!-- Kontainer hasil pencarian -->
+    <div id="resultContainer">
+        <!-- Kontainer untuk kata, kalimat, dan informasi -->
+        <div class="content-container">
+            <div class="content">
+                <!-- Bagian untuk menampilkan kata-kata -->
+                <p>Kata</p>
+                <div class="words"></div>
+
+                <!-- Bagian untuk menampilkan kalimat -->
+                <p>Kalimat</p>
+                <div class="sentences"></div>
+            </div>
+
+            <!-- Bagian untuk menampilkan informasi -->
+            <div class="informasis">
+                <p>Informasi</p>
+                <div class="media-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memuat file JavaScript -->
+    <script src="./database.js"></script>
+
+    <!-- Script JavaScript untuk logika pencarian dan tampilan hasil -->
+    <script>
+        // Mendapatkan elemen-elemen dari DOM
+        const inputChar = document.querySelector('#inputChar');
+        const resultBox = document.getElementById('resultBox');
+        const resultContainer = document.getElementById('resultContainer');
+        const words = document.querySelector('.words');
+        const setences = document.querySelector('.sentences');
+        const informasis = document.querySelector('.informasis');
+        const informasiE = document.querySelector('.media-container')
+        let currentChar = '';
+
+        // Event listener untuk input huruf
+        inputChar.addEventListener('input', () => {
+            let valueChar = inputChar.value.trim().toLowerCase();
+
+            if (valueChar) {
+                // Memanggil fungsi pencarian kata
+                currentChar = valueChar;
+                kata(valueChar);
+            } else {
+                // Mereset hasil jika input kosong
+                resetResult();
+            }
+        });
+
+        // Fungsi untuk mereset hasil pencarian
+        const resetResult = () => {
+            words.innerHTML = '';
+            setences.innerHTML = '';
+            resultBox.innerHTML = '';
+            informasiE.innerHTML = '';
+
+            document.querySelectorAll('.content p').forEach(p => {
+                p.style.display = 'none';
+            });
+        };
+
+        // Fungsi untuk menampilkan kata-kata
+        const kata = (data) => {
+            document.querySelector('.content p:first-of-type').style.display = 'block';
+            let db = Object.keys(database[data]);
+            let isiElemet = "";
+
+            // Membuat daftar kata-kata sebagai tautan
+            db.forEach(e => {
+                isiElemet += `<a href="#" onclick="kalimat('${data}', '${e}', this)" class="word">${e}</a>`;
+            });
+
+            words.innerHTML = isiElemet;
+        };
+
+        // Fungsi untuk menampilkan kalimat-kalimat
+        const kalimat = (char, data, element) => {
+            document.querySelector('.content p:last-of-type').style.display = 'block';
+            let word = document.querySelectorAll('.word');
+            word.forEach(e => {
+                e.classList.remove('active');
+            });
+
+            element.classList.add('active');
+
+            let db = Object.keys(database[char][data]);
+
+            let isiElemet = "";
+
+            // Membuat daftar kalimat-kalimat sebagai tautan
+            db.forEach(e => {
+                isiElemet += `<div class="sentence" onclick="informasi('${char}', '${data}', '${e}', this)">${e}</div>`;
+            });
+
+            setences.innerHTML = isiElemet;
+
+            informasiE.innerHTML = '';
+        };
+
+        // Fungsi untuk menampilkan informasi lengkap
+        const informasi = (char, word, sentence, element) => {
+            informasis.style.display = 'block';
+            let sentenceA = document.querySelectorAll('.sentence');
+            sentenceA.forEach(e => {
+                e.classList.remove('active');
+            });
+
+            element.classList.add('active');
+
+            // Mendapatkan data informasi dari database
+            let db = database[char][word][sentence];
+
+            // Menampilkan informasi dalam elemen HTML
+            informasiE.innerHTML = `<div class="media">
+                        <p>Text</p>
+                        <p>${db.teks}</p>
+                        <p>Foto</p>
+                        <img src="db/foto/${db.foto}" alt="" width='332' height='332'>
+                    </div>
+
+                    <div class="media">
+                        <p>Video</p>
+                        <video src="db/video/${db.video}" controls height='360'></video>
+                    </div>`;
+        };
+    </script>
+</body>
+
+</html>
